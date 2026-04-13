@@ -151,13 +151,6 @@ export default function Dashboard({ data, geoJson, onReset }) {
     { subject: 'Extinction', A: dimensions.extinction, fullMark: 5 },
   ];
 
-  const dimColors = {
-    Extent: 'var(--dim-extent)',
-    Condition: 'var(--dim-condition)',
-    Population: 'var(--dim-population)',
-    Extinction: 'var(--dim-extinction)',
-  };
-
 
   const mainColor = getScoreColor(sonValue);
 
