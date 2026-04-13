@@ -158,10 +158,6 @@ export default function Dashboard({ data, geoJson, onReset }) {
     Extinction: 'var(--dim-extinction)',
   };
 
-  const barData = Object.keys(dimColors).map(key => ({
-    name: key,
-    score: dimensions[key.toLowerCase()].toFixed(1)
-  }));
 
   const mainColor = getScoreColor(sonValue);
 
