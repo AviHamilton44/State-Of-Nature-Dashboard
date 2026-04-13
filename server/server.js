@@ -77,7 +77,19 @@ app.post("/api/sites/:id/generate-metrics", (req, res) => {
 // 3. Calculate SoN
 // ------------------------------
 app.get("/api/sites/:id/son-summary", (req, res) => {
-    const data = siteData[req.params.id];
+    let data = siteData[req.params.id];
+
+    if (!data) {
+        const random = () => Math.floor(Math.random() * 5) + 1;
+        data = {
+            extent: { habitat: random(), land_cover: random(), cpland: random(), lfi: random(), habitat_loss: random() },
+            condition: { ndvi: random(), hhi: random(), flii: random(), eii: random(), msa: random(), bii: random(), pdf: random(), acoustic: random(), taxonomic: random(), water_scarcity: random(), water_quality: random(), forest_condition: random() },
+            population: { richness: random(), diversity: random(), small_ranged: random(), kba: random(), keystone: random(), iucn: random() },
+            extinction: { threatened: random(), ceri: random(), star_t: random(), star_r: random() },
+            threats: { hdi: random(), ndsi: random(), light: random(), uhii: random(), lst: random() },
+        };
+        siteData[req.params.id] = data;
+    }
 
     const avg = (obj) =>
         Object.values(obj).reduce((a, b) => a + b, 0) /
@@ -99,12 +111,8 @@ app.get("/api/sites/:id/son-summary", (req, res) => {
     });
 });
 
-// Serve frontend build files
-const buildPath = path.join(__dirname, 'client', 'build');
-app.use(express.static(buildPath));
-
-app.use((req, res) => {
-    res.sendFile(path.join(buildPath, 'index.html'));
+app.get('/', (req, res) => {
+    res.send('State of Nature API is running successfully.');
 });
 
 const PORT = process.env.PORT || 5000;
