@@ -100,7 +100,7 @@ app.get("/api/sites/:id/son-summary", (req, res) => {
 });
 
 // Serve frontend build files
-const buildPath = path.join(__dirname, 'son-dashboard', 'build');
+const buildPath = path.join(__dirname, 'client', 'build');
 app.use(express.static(buildPath));
 
 app.use((req, res) => {
