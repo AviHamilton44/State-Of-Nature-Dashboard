@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { 
+import { useState } from 'react';
+import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell
+  Tooltip
 } from 'recharts';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
-import { Leaf, AlertTriangle, Activity, BarChart2, Map as MapIcon, Droplet, Wind, Sun, TrendingUp, ShieldAlert, Zap, Box, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { Leaf, AlertTriangle, Activity, BarChart2, Map as MapIcon, Droplet, Wind, Sun, ShieldAlert, Zap, Box, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import './Dashboard.css';
 
 const SCORE_COLORS = {
@@ -33,18 +33,18 @@ const getMetricIcon = (name) => {
 const getMetricGrade = (val, groupName) => {
   const num = parseFloat(val);
   if (isNaN(num)) return { label: 'Unknown', class: '' };
-  
+
   // Threat and Extinction are negative indicators. Higher = Worse.
   const isNegativeIndicator = groupName === 'threats' || groupName === 'extinction';
-  
+
   if (isNegativeIndicator) {
-     if (num <= 2.0) return { label: 'Good', class: 'badge-good' };
-     if (num <= 3.5) return { label: 'Medium', class: 'badge-medium' };
-     return { label: 'Poor', class: 'badge-poor' };
+    if (num <= 2.0) return { label: 'Good', class: 'badge-good' };
+    if (num <= 3.5) return { label: 'Medium', class: 'badge-medium' };
+    return { label: 'Poor', class: 'badge-poor' };
   } else {
-     if (num <= 2.0) return { label: 'Poor', class: 'badge-poor' };
-     if (num <= 3.5) return { label: 'Medium', class: 'badge-medium' };
-     return { label: 'Good', class: 'badge-good' };
+    if (num <= 2.0) return { label: 'Poor', class: 'badge-poor' };
+    if (num <= 3.5) return { label: 'Medium', class: 'badge-medium' };
+    return { label: 'Good', class: 'badge-good' };
   }
 };
 
@@ -66,16 +66,16 @@ const getRingArea = (coords) => {
 const getFeatureAreaKm2 = (feature) => {
   let area = 0;
   if (!feature.geometry || !feature.geometry.coordinates) return null;
-  
+
   if (feature.geometry.type === 'Polygon') {
     area = getRingArea(feature.geometry.coordinates[0]);
-    for(let i = 1; i < feature.geometry.coordinates.length; i++) {
+    for (let i = 1; i < feature.geometry.coordinates.length; i++) {
       area -= getRingArea(feature.geometry.coordinates[i]);
     }
   } else if (feature.geometry.type === 'MultiPolygon') {
     feature.geometry.coordinates.forEach(polygon => {
       let polyArea = getRingArea(polygon[0]);
-      for(let i = 1; i < polygon.length; i++) {
+      for (let i = 1; i < polygon.length; i++) {
         polyArea -= getRingArea(polygon[i]);
       }
       area += polyArea;
@@ -99,7 +99,7 @@ export default function Dashboard({ data, geoJson, onReset }) {
   const { overall_son, dimensions, threat_score, metrics } = data;
   const sonValue = parseFloat(overall_son);
   const threatValue = parseFloat(threat_score);
-  
+
   let bounds = null;
   try {
     if (geoJson) bounds = L.geoJSON(geoJson).getBounds();
@@ -110,7 +110,7 @@ export default function Dashboard({ data, geoJson, onReset }) {
   const onEachFeature = (feature, layer) => {
     if (feature.properties) {
       let tooltipContent = '';
-      
+
       const tryKeys = (keys, label) => {
         for (let k of keys) {
           if (feature.properties[k] !== undefined && feature.properties[k] !== null) {
@@ -121,7 +121,7 @@ export default function Dashboard({ data, geoJson, onReset }) {
       };
 
       tryKeys(['Name', 'NAME', 'name'], 'Name');
-      
+
       const realArea = getFeatureAreaKm2(feature);
       if (realArea !== null && realArea > 0) {
         let displayArea = Math.round(realArea).toLocaleString();
@@ -130,20 +130,20 @@ export default function Dashboard({ data, geoJson, onReset }) {
       } else {
         tryKeys(['Area', 'AREA', 'area', 'Shape_Area'], 'Area');
       }
-      
+
       if (!tooltipContent && Object.keys(feature.properties).length > 0) {
-         const keys = Object.keys(feature.properties).slice(0, 3);
-         keys.forEach(k => {
-             tooltipContent += `<strong>${k}:</strong> ${feature.properties[k]}<br/>`;
-         });
+        const keys = Object.keys(feature.properties).slice(0, 3);
+        keys.forEach(k => {
+          tooltipContent += `<strong>${k}:</strong> ${feature.properties[k]}<br/>`;
+        });
       }
-      
+
       if (tooltipContent) {
         layer.bindTooltip(`<div class="map-tooltip" style="font-family: inherit; color: var(--text-primary);">${tooltipContent}</div>`, { permanent: false, direction: 'auto', sticky: true });
       }
     }
   };
-  
+
   const radarData = [
     { subject: 'Extent', A: dimensions.extent, fullMark: 5 },
     { subject: 'Condition', A: dimensions.condition, fullMark: 5 },
@@ -178,7 +178,7 @@ export default function Dashboard({ data, geoJson, onReset }) {
       </div>
 
       <div className="dashboard-grid">
-        
+
         {/* Map Card */}
         <div className="glass-panel card-map" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
           <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -186,8 +186,8 @@ export default function Dashboard({ data, geoJson, onReset }) {
               <MapIcon size={20} color="var(--primary)" />
               <h3 className="card-title">Map Visualization</h3>
             </div>
-            <select 
-              value={mapType} 
+            <select
+              value={mapType}
               onChange={(e) => setMapType(e.target.value)}
               style={{
                 padding: '0.5rem',
@@ -207,17 +207,17 @@ export default function Dashboard({ data, geoJson, onReset }) {
           </div>
           <div className="map-container-wrapper">
             {bounds && bounds.isValid() ? (
-               <MapContainer bounds={bounds} style={{ height: '100%', width: '100%', backgroundColor: '#0B0E14' }} zoomControl={true}>
-                 <TileLayer
-                   url={tileUrls[mapType]}
-                   attribution='Map data providers'
-                 />
-                 <GeoJSON data={geoJson} style={{ color: '#10B981', weight: 2, fillOpacity: 0.2 }} onEachFeature={onEachFeature} />
-               </MapContainer>
+              <MapContainer bounds={bounds} style={{ height: '100%', width: '100%', backgroundColor: '#0B0E14' }} zoomControl={true}>
+                <TileLayer
+                  url={tileUrls[mapType]}
+                  attribution='Map data providers'
+                />
+                <GeoJSON data={geoJson} style={{ color: '#10B981', weight: 2, fillOpacity: 0.2 }} onEachFeature={onEachFeature} />
+              </MapContainer>
             ) : (
-               <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                 No valid geometry found for visualization.
-               </div>
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                No valid geometry found for visualization.
+              </div>
             )}
           </div>
         </div>
@@ -235,7 +235,7 @@ export default function Dashboard({ data, geoJson, onReset }) {
                 <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
                 <PolarRadiusAxis angle={30} domain={[0, 5]} tick={false} axisLine={false} />
                 <Radar name="Area" dataKey="A" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.4} />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: 'var(--bg-surface-elevated)', border: 'none', borderRadius: '8px', color: 'var(--text-primary)' }}
                   itemStyle={{ color: 'var(--primary)' }}
                 />
@@ -261,8 +261,8 @@ export default function Dashboard({ data, geoJson, onReset }) {
           <div className="score-value-wrapper" style={{ boxShadow: `0 0 40px ${mainColor}40, inset 0 4px 20px rgba(0,0,0,0.05)` }}>
             <svg style={{ position: 'absolute', width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
               <circle cx="80" cy="80" r="76" fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth="8" />
-              <circle cx="80" cy="80" r="76" fill="none" stroke={mainColor} strokeWidth="8" 
-                strokeDasharray="477" strokeDashoffset={477 - (477 * (sonValue/10))} 
+              <circle cx="80" cy="80" r="76" fill="none" stroke={mainColor} strokeWidth="8"
+                strokeDasharray="477" strokeDashoffset={477 - (477 * (sonValue / 10))}
                 style={{ transition: 'stroke-dashoffset 1.5s ease-out' }} />
             </svg>
             <span className="score-value" style={{ color: mainColor }}>{sonValue}</span>
@@ -276,13 +276,13 @@ export default function Dashboard({ data, geoJson, onReset }) {
             <BarChart2 size={24} color="var(--text-primary)" />
             <h3 className="card-title" style={{ fontSize: '1.25rem' }}>Detailed Metrics</h3>
           </div>
-          
+
           {Object.entries(metrics).map(([groupName, groupData]) => {
             const isExpanded = expandedGroup === groupName;
             return (
               <div key={groupName} className="metrics-section" style={{ marginBottom: '0.25rem' }}>
-                <div 
-                  className="accordion-header" 
+                <div
+                  className="accordion-header"
                   onClick={() => setExpandedGroup(isExpanded ? null : groupName)}
                 >
                   <div className="accordion-title">
@@ -290,7 +290,7 @@ export default function Dashboard({ data, geoJson, onReset }) {
                   </div>
                   {isExpanded ? <ChevronUp size={20} color="var(--text-secondary)" /> : <ChevronDown size={20} color="var(--text-secondary)" />}
                 </div>
-                
+
                 <div className={`accordion-content ${isExpanded ? 'expanded' : ''}`}>
                   <div className="metrics-list">
                     {Object.entries(groupData).map(([metricName, metricValue]) => {
@@ -300,10 +300,10 @@ export default function Dashboard({ data, geoJson, onReset }) {
                           <span className="metric-name" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             {getMetricIcon(metricName)}
                             <span>{metricName.replace(/_/g, ' ')}</span>
-                            <Info 
-                              size={14} 
-                              color="var(--text-muted)" 
-                              style={{ cursor: 'help' }} 
+                            <Info
+                              size={14}
+                              color="var(--text-muted)"
+                              style={{ cursor: 'help' }}
                               title={`Calculated parameter indexing algorithm value for ${metricName.replace(/_/g, ' ')}. Indicates current health standard.`}
                             />
                           </span>
@@ -319,7 +319,7 @@ export default function Dashboard({ data, geoJson, onReset }) {
               </div>
             );
           })}
-          
+
         </div>
 
       </div>
