@@ -11,6 +11,8 @@ import './App.css';
 // Mock delays for better UX
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+
 function App() {
   const [appState, setAppState] = useState('idle'); // 'idle', 'uploading', 'analyzing', 'calculating', 'results'
   const [data, setData] = useState(null);
@@ -19,7 +21,7 @@ function App() {
   const handleUpload = async (file) => {
     try {
       setAppState('uploading');
-      
+
       // Parse Shapefile or GeoJSON locally to display on map
       try {
         if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) {
@@ -38,20 +40,20 @@ function App() {
       const formData = new FormData();
       formData.append('file', file);
       // Simulating a real upload even though backend just returns mock JSON
-      await delay(1000); 
-      const uploadRes = await axios.post('/api/sites/upload', formData);
+      await delay(1000);
+      const uploadRes = await axios.post(`${API_BASE_URL}/api/sites/upload`, formData);
       const { site_id } = uploadRes.data;
 
       // 2. Generate Metrics
       setAppState('analyzing');
       await delay(1500);
-      await axios.post(`/api/sites/${site_id}/generate-metrics`);
+      await axios.post(`${API_BASE_URL}/api/sites/${site_id}/generate-metrics`);
 
       // 3. Get SoN Summary
       setAppState('calculating');
       await delay(1000);
-      const summaryRes = await axios.get(`/api/sites/${site_id}/son-summary`);
-      
+      const summaryRes = await axios.get(`${API_BASE_URL}/api/sites/${site_id}/son-summary`);
+
       setData(summaryRes.data);
       setAppState('results');
 
@@ -96,20 +98,20 @@ function App() {
             <h1 className="app-subtitle" style={{ fontSize: '1rem', fontWeight: '500' }}>State of Nature Dashboard</h1>
           </div>
         </div>
-        
+
         {appState === 'results' && (
-           <div style={{ textAlign: 'right' }}>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Status</div>
-              <div style={{ color: 'var(--color-score-high)', fontWeight: '600' }}>Analysis complete</div>
-           </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Status</div>
+            <div style={{ color: 'var(--color-score-high)', fontWeight: '600' }}>Analysis complete</div>
+          </div>
         )}
       </header>
 
       <main className="main-content">
         {appState === 'idle' && <FileUpload onUpload={handleUpload} />}
-        
+
         {(appState === 'uploading' || appState === 'analyzing' || appState === 'calculating') && renderLoadingState()}
-        
+
         {appState === 'results' && <Dashboard data={data} geoJson={geoJson} onReset={resetApp} />}
       </main>
     </div>
